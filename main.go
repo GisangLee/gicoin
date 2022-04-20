@@ -24,14 +24,25 @@ func (b *blockchain) getLastHash() string {
 }
 
 func (b *blockchain) addBlock(data string) {
-	newBlock := block{data: "", hash: "", prevHash: b.getLastHash()}
+	newBlock := block{data: data, hash: "", prevHash: b.getLastHash()}
 	hash := sha256.Sum256([]byte(newBlock.data + newBlock.prevHash))
 	newBlock.hash = fmt.Sprintf("%x", hash)
+	b.blocks = append(b.blocks, newBlock)
 }
 
-func (b *blockchain) listgBlocks() {
-
+func (b *blockchain) listBlocks() {
+	for _, block := range b.blocks {
+		fmt.Printf("Data :  %s\n", block.data)
+		fmt.Printf("Hash :  %s\n", block.hash)
+		fmt.Printf("Prev Hash :  %s\n", block.prevHash)
+	}
 }
 
 func main() {
+	chain := blockchain{}
+
+	chain.addBlock("Genesis Block")
+	chain.addBlock("Second Block")
+	chain.addBlock("Third Block")
+	chain.listBlocks()
 }
