@@ -28,6 +28,10 @@ type URLDescription struct {
 	Payload     string `json:"payload,omitempty"`
 }
 
+type AddBlockBody struct {
+	Message string
+}
+
 func documentation(rw http.ResponseWriter, r *http.Request) {
 	data := []URLDescription{
 		{
@@ -37,8 +41,20 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 		},
 		{
 			URL:         URL("/blocks"),
+			Method:      "GET",
+			Description: "See All Blocks",
+			Payload:     "data:string",
+		},
+		{
+			URL:         URL("/blocks"),
 			Method:      "POST",
 			Description: "Add a Block",
+			Payload:     "data:string",
+		},
+		{
+			URL:         URL("/blocks/{id}"),
+			Method:      "GET",
+			Description: "See a Block",
 			Payload:     "data:string",
 		},
 	}
@@ -56,7 +72,10 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(rw).Encode(blockchain.AllBlocks())
 
 	case "POST":
-
+		var addBlockBody AddBlockBody
+		utils.HandleError(json.NewDecoder(r.Body).Decode(&addBlockBody))
+		blockchain.GetBlockchain().AddBlock(addBlockBody.Message)
+		rw.WriteHeader(http.StatusCreated)
 	}
 }
 
