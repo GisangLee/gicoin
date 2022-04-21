@@ -2,15 +2,18 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/gisanglee/gicoin/blockchain"
+	"log"
+	"net/http"
 )
 
+const PORT string = ":4000"
+
+func home(rw http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(rw, "hello from home")
+}
+
 func main() {
-	chain := blockchain.GetBlockchain()
-	chain.AddBlock("Second Block")
-	chain.AddBlock("Third Block")
-	chain.AddBlock("Fourth Block")
-	result := blockchain.AllBlocks()
-	fmt.Println(result)
+	http.HandleFunc("/", home)
+	fmt.Printf("Listening on http://localhost%s\n", PORT)
+	log.Fatal(http.ListenAndServe(PORT, nil))
 }
