@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gisanglee/gicoin/blockchain"
 	"github.com/gisanglee/gicoin/utils"
 )
 
@@ -35,7 +36,7 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Description: "See Documentation",
 		},
 		{
-			URL:         URL("/block"),
+			URL:         URL("/blocks"),
 			Method:      "POST",
 			Description: "Add a Block",
 			Payload:     "data:string",
@@ -47,9 +48,22 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(rw, "%s", b)
 }
 
+func blocks(rw http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+
+	case "GET":
+		rw.Header().Add("Content-Type", "application/json")
+		json.NewEncoder(rw).Encode(blockchain.AllBlocks())
+
+	case "POST":
+
+	}
+}
+
 func main() {
 	//explorer.Start()
 	http.HandleFunc("/", documentation)
+	http.HandleFunc("/blocks", blocks)
 	fmt.Printf("LIstening on http://localhost%s\n", PORT)
 	log.Fatal(http.ListenAndServe(PORT, nil))
 }
