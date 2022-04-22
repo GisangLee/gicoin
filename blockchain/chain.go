@@ -1,6 +1,9 @@
 package blockchain
 
 import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
 	"sync"
 
 	"github.com/gisanglee/gicoin/db"
@@ -14,6 +17,11 @@ type blockchain struct {
 
 var b *blockchain
 var once sync.Once
+
+func (b *blockchain) restore(data []byte) {
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	utils.HandleError(decoder.Decode(b))
+}
 
 func (b *blockchain) persist() {
 	db.SaveBlockchain(utils.ToBytes(b))
@@ -31,9 +39,20 @@ func Blockchain() *blockchain {
 		once.Do(func() {
 			b = &blockchain{"", 0}
 
-			b.AddBlock("Genesis")
+			fmt.Printf("New hash : %s\n Height:%d", b.NewestHash, b.Height)
+
+			// search checkpoin on the db
+			checkpoint := db.Checkpoint()
+			if checkpoint == nil {
+				b.AddBlock("Genesis")
+			} else {
+				// restore b from bytes
+				fmt.Println("Restoring....")
+				b.restore(checkpoint)
+			}
 		})
 	}
 
+	fmt.Printf("New hash : %s\n Height:%d", b.NewestHash, b.Height)
 	return b
 }
