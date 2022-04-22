@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/boltdb/bolt"
 	"github.com/gisanglee/gicoin/utils"
 )
@@ -37,4 +39,29 @@ func DB() *bolt.DB {
 	}
 
 	return db
+}
+
+func SaveBlock(hash string, data []byte) {
+	fmt.Printf("Saving Block %s\n Data: %b", hash, data)
+
+	err := DB().Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(blocksBucket))
+		err := bucket.Put([]byte(hash), data)
+
+		return err
+	})
+
+	utils.HandleError(err)
+
+}
+
+func SaveBlockchain(data []byte) {
+	err := DB().Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(dataBucket))
+		err := bucket.Put([]byte("checkpoint"), data)
+		return err
+	})
+
+	utils.HandleError(err)
+
 }
