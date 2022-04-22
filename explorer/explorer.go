@@ -49,6 +49,6 @@ func Start(port int) {
 	handler.HandleFunc("/", home)
 	handler.HandleFunc("/add", add)
 
-	fmt.Printf("Listening on http://localhost:%d\n", port)
+	fmt.Printf("HTML > Listening on http://localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handler))
 }

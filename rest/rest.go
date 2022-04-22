@@ -121,6 +121,6 @@ func Start(aPort int) {
 	handler.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	handler.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
 
-	fmt.Printf("LIstening on http://localhost%s\n", port)
+	fmt.Printf("REST API > Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, handler))
 }
