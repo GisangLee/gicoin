@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gisanglee/gicoin/blockchain"
 	"github.com/gisanglee/gicoin/utils"
@@ -56,7 +55,7 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Payload:     "data:string",
 		},
 		{
-			URL:         url("/blocks/{height}"),
+			URL:         url("/blocks/{hash}"),
 			Method:      "GET",
 			Description: "See a Block",
 			Payload:     "data:string",
@@ -72,14 +71,17 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case "GET":
-
-		json.NewEncoder(rw).Encode(blockchain.AllBlocks())
+		return
+		// json.NewEncoder(rw).Encode(blockchain.AllBlocks())
 
 	case "POST":
-		var addBlockBody addBlockBody
-		utils.HandleError(json.NewDecoder(r.Body).Decode(&addBlockBody))
-		blockchain.GetBlockchain().AddBlock(addBlockBody.Message)
-		rw.WriteHeader(http.StatusCreated)
+		return
+		/*
+			var addBlockBody addBlockBody
+			utils.HandleError(json.NewDecoder(r.Body).Decode(&addBlockBody))
+			blockchain.GetBlockchain().AddBlock(addBlockBody.Message)
+			rw.WriteHeader(http.StatusCreated)
+		*/
 	default:
 		rw.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -87,10 +89,9 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 
 func block(rw http.ResponseWriter, r *http.Request) {
 	block_map := mux.Vars(r)
-	block_id, err := strconv.Atoi(block_map["height"])
-	utils.HandleError(err)
+	block_hash := block_map["hash"]
 
-	block, err := blockchain.GetBlockchain().GetBlock(block_id)
+	block, err := blockchain.FindBlock(block_hash)
 
 	encoder := json.NewEncoder(rw)
 
@@ -119,7 +120,7 @@ func Start(aPort int) {
 	//explorer.Start()
 	handler.HandleFunc("/", documentation).Methods("GET")
 	handler.HandleFunc("/blocks", blocks).Methods("GET", "POST")
-	handler.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
+	handler.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
 
 	fmt.Printf("REST API > Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, handler))
