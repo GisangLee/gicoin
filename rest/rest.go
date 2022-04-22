@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gisanglee/gicoin/blockchain"
 	"github.com/gisanglee/gicoin/utils"
+	"github.com/gorilla/mux"
 )
 
 var port string
@@ -30,6 +32,10 @@ type addBlockBody struct {
 	Message string
 }
 
+type errResponse struct {
+	ErrorMsg string `json:"errorMsg"`
+}
+
 func documentation(rw http.ResponseWriter, r *http.Request) {
 	data := []urlDescription{
 		{
@@ -50,7 +56,7 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Payload:     "data:string",
 		},
 		{
-			URL:         url("/blocks/{id}"),
+			URL:         url("/blocks/{height}"),
 			Method:      "GET",
 			Description: "See a Block",
 			Payload:     "data:string",
@@ -74,16 +80,37 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		utils.HandleError(json.NewDecoder(r.Body).Decode(&addBlockBody))
 		blockchain.GetBlockchain().AddBlock(addBlockBody.Message)
 		rw.WriteHeader(http.StatusCreated)
+	default:
+		rw.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func block(rw http.ResponseWriter, r *http.Request) {
+	block_map := mux.Vars(r)
+	block_id, err := strconv.Atoi(block_map["height"])
+	utils.HandleError(err)
+
+	block, err := blockchain.GetBlockchain().GetBlock(block_id)
+
+	encoder := json.NewEncoder(rw)
+
+	if err == blockchain.ErrNotFound {
+		encoder.Encode(errResponse{fmt.Sprint(err)})
+	} else {
+		encoder.Encode(block)
 	}
 }
 
 func Start(aPort int) {
-	handler := http.NewServeMux()
+	//handler := http.NewServeMux()
+
+	handler := mux.NewRouter()
 
 	port = fmt.Sprintf(":%d", aPort)
 	//explorer.Start()
-	handler.HandleFunc("/", documentation)
-	handler.HandleFunc("/blocks", blocks)
+	handler.HandleFunc("/", documentation).Methods("GET")
+	handler.HandleFunc("/blocks", blocks).Methods("GET", "POST")
+	handler.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
 
 	fmt.Printf("LIstening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, handler))
