@@ -62,7 +62,7 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Payload:     "data:string",
 		},
 	}
-	rw.Header().Add("Content-Type", "application/json")
+
 	b, err := json.Marshal(data)
 	utils.HandleError(err)
 	fmt.Fprintf(rw, "%s", b)
@@ -72,7 +72,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case "GET":
-		rw.Header().Add("Content-Type", "application/json")
+
 		json.NewEncoder(rw).Encode(blockchain.AllBlocks())
 
 	case "POST":
@@ -101,10 +101,19 @@ func block(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func jsonContentTypeMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(rw, r)
+	})
+}
+
 func Start(aPort int) {
 	//handler := http.NewServeMux()
 
 	handler := mux.NewRouter()
+
+	handler.Use(jsonContentTypeMiddleware)
 
 	port = fmt.Sprintf(":%d", aPort)
 	//explorer.Start()
