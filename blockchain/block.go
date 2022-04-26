@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/gisanglee/gicoin/db"
 	"github.com/gisanglee/gicoin/utils"
@@ -24,19 +25,37 @@ func (b *Block) persist() {
 	db.SaveBlock(b.Hash, utils.ToBytes(b))
 }
 
+func (b *Block) mine() {
+	target := strings.Repeat("0", b.Difficulty)
+	for {
+		blockAsString := fmt.Sprint(b)
+		hash := fmt.Sprintf("%x", sha256.Sum256([]byte(blockAsString)))
+
+		fmt.Printf("block as string: %s\nHash: %s\nTarget: %s\nNonce: %d\n\n", blockAsString, hash, target, b.Nonce)
+
+		if strings.HasPrefix(hash, target) {
+			b.Hash = hash
+			break
+		}
+
+		b.Nonce++
+	}
+}
+
 func createBlock(data string, prevHash string, height int) *Block {
-	block := Block{
-		Data:     data,
-		Hash:     "",
-		PrevHash: prevHash,
-		Height:   height,
+	block := &Block{
+		Data:       data,
+		Hash:       "",
+		PrevHash:   prevHash,
+		Height:     height,
+		Difficulty: difficulty,
+		Nonce:      0,
 	}
 
-	payload := block.Data + block.PrevHash + fmt.Sprint(block.Height)
-	block.Hash = fmt.Sprintf("%x", sha256.Sum256([]byte(payload)))
+	block.mine()
 
 	block.persist()
-	return &block
+	return block
 }
 
 var ErrNotFound = errors.New("block not Found")
