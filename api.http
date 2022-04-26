@@ -2,6 +2,10 @@ http://localhost:5000/
 
 ###
 
+http://localhost:5000/status
+
+###
+
 http://localhost:5000/blocks
 
 ###
@@ -9,7 +13,7 @@ http://localhost:5000/blocks
 POST http://localhost:5000/blocks
 
 {
-    "message": "Fifth Block"
+    "message": "Mine me"
 }
 
 ###

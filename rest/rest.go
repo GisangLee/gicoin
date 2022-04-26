@@ -43,10 +43,14 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Description: "See Documentation",
 		},
 		{
+			URL:         url("/status"),
+			Method:      "GET",
+			Description: "See the blockchain status",
+		},
+		{
 			URL:         url("/blocks"),
 			Method:      "GET",
 			Description: "See All Blocks",
-			Payload:     "data:string",
 		},
 		{
 			URL:         url("/blocks"),
@@ -106,6 +110,10 @@ func jsonContentTypeMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func status(rw http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(rw).Encode(blockchain.Blockchain())
+}
+
 func Start(aPort int) {
 	//handler := http.NewServeMux()
 
@@ -118,6 +126,7 @@ func Start(aPort int) {
 	handler.HandleFunc("/", documentation).Methods("GET")
 	handler.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	handler.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
+	handler.HandleFunc("/status", status).Methods("GET")
 
 	fmt.Printf("REST API > Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, handler))
