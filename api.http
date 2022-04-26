@@ -12,10 +12,6 @@ http://localhost:5000/blocks
 
 POST http://localhost:5000/blocks
 
-{
-    "message": "Mine me"
-}
-
 ###
 http://localhost:5000/balance/gi
 
@@ -32,6 +28,6 @@ http://localhost:5000/mempool
 POST http://localhost:5000/transactions
 
 {
-    "to":"lala",
-    "amount":80
+    "to":"dada",
+    "amount":30
 }
