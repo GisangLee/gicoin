@@ -27,6 +27,11 @@ type urlDescription struct {
 	Payload     string `json:"payload,omitempty"`
 }
 
+type balanceResponse struct {
+	Address string `json:"address"`
+	Balance int    `json:"balance"`
+}
+
 type errResponse struct {
 	ErrorMsg string `json:"errorMsg"`
 }
@@ -59,6 +64,11 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Method:      "GET",
 			Description: "See a Block",
 			Payload:     "data:string",
+		},
+		{
+			URL:         url("/balance/{address}"),
+			Method:      "GET",
+			Description: "Get TxOuts for an address",
 		},
 	}
 
@@ -108,6 +118,22 @@ func status(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(blockchain.Blockchain())
 }
 
+func balance(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	address := vars["address"]
+
+	total := r.URL.Query().Get("total")
+
+	switch total {
+	case "true":
+		amount := blockchain.Blockchain().BalanceByAddress(address)
+		json.NewEncoder(rw).Encode(balanceResponse{Address: address, Balance: amount})
+	default:
+		utils.HandleError(json.NewEncoder(rw).Encode(blockchain.Blockchain().TxOutsByAddress(address)))
+	}
+
+}
+
 func Start(aPort int) {
 	//handler := http.NewServeMux()
 
@@ -121,6 +147,7 @@ func Start(aPort int) {
 	handler.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	handler.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
 	handler.HandleFunc("/status", status).Methods("GET")
+	handler.HandleFunc("/balance/{address}", balance).Methods("GET")
 
 	fmt.Printf("REST API > Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, handler))
