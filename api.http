@@ -17,5 +17,21 @@ POST http://localhost:5000/blocks
 }
 
 ###
+http://localhost:5000/balance/gi
+
+###
 
 http://localhost:5000/blocks/63c66ebb44c90261caa5a779dcf0febc0bc5c473b8c4632ade9026c2fc986fb8
+
+
+###
+http://localhost:5000/mempool
+
+###
+
+POST http://localhost:5000/transactions
+
+{
+    "to":"lala",
+    "amount":80
+}
