@@ -40,6 +40,10 @@ func DB() *bolt.DB {
 	return db
 }
 
+func Close() {
+	DB().Close()
+}
+
 func SaveBlock(hash string, data []byte) {
 
 	err := DB().Update(func(tx *bolt.Tx) error {
