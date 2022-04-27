@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/gisanglee/gicoin/wallet"
-)
+import "github.com/gisanglee/gicoin/wallet"
 
 func main() {
 	//defer db.Close()
@@ -10,5 +8,5 @@ func main() {
 	//rest.Start(5000)
 	//blockchain.Blockchain()
 	//cli.Start()
-	wallet.Start()
+	wallet.Wallet()
 }
