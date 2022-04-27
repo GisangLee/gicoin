@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"errors"
 	"time"
 
 	"github.com/gisanglee/gicoin/utils"
@@ -66,6 +67,42 @@ func makeCoinbaseTx(address string) *Tx {
 }
 
 func makeTx(from string, to string, amount int) (*Tx, error) {
+	if Blockchain().BalanceByAddress(from) < amount {
+		return nil, errors.New("Not Enough 돈")
+	}
+
+	var txOuts []*TxOut
+	var txIns []*TxIn
+
+	total := 0
+	uTxOuts := Blockchain().UTXOByAddress(from)
+
+	for _, uTxOut := range uTxOuts {
+
+		if total > amount {
+			break
+		}
+
+		txIn := &TxIn{uTxOut.TxId, uTxOut.Index, from}
+		txIns = append(txIns, txIn)
+
+		total += uTxOut.Amount
+	}
+
+	if change := total - amount; change != 0 {
+		changeTxOut := &TxOut{Owner: from, Amount: change}
+		txOuts = append(txOuts, changeTxOut)
+	}
+
+	txOut := &TxOut{Owner: to, Amount: amount}
+
+	txOuts = append(txOuts, txOut)
+
+	tx := &Tx{Id: "", Timestamp: int(time.Now().Unix()), TxIns: txIns, TxOuts: txOuts}
+
+	tx.getId()
+
+	return tx, nil
 
 }
 
