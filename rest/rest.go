@@ -86,7 +86,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case "GET":
-		json.NewEncoder(rw).Encode(blockchain.Blockchain().Blocks())
+		json.NewEncoder(rw).Encode(blockchain.Blocks(blockchain.Blockchain()))
 
 	case "POST":
 		blockchain.Blockchain().AddBlock()
@@ -131,10 +131,10 @@ func balance(rw http.ResponseWriter, r *http.Request) {
 
 	switch total {
 	case "true":
-		amount := blockchain.Blockchain().BalanceByAddress(address)
+		amount := blockchain.BalanceByAddress(address, blockchain.Blockchain())
 		json.NewEncoder(rw).Encode(balanceResponse{Address: address, Balance: amount})
 	default:
-		utils.HandleError(json.NewEncoder(rw).Encode(blockchain.Blockchain().UTXOByAddress(address)))
+		utils.HandleError(json.NewEncoder(rw).Encode(blockchain.UTXOByAddress(address, blockchain.Blockchain())))
 	}
 
 }

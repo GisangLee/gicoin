@@ -29,5 +29,5 @@ POST http://localhost:5000/transactions
 
 {
     "to":"king",
-    "amount": 65
+    "amount": 50
 }
