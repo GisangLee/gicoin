@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"errors"
 	"time"
 
 	"github.com/gisanglee/gicoin/utils"
@@ -25,13 +24,20 @@ type Tx struct {
 }
 
 type TxIn struct {
-	Owner  string `json:"owner"`
-	Amount int    `json:"amount"`
+	TxId  string `json:"txId"`
+	Index int    `json:"index"`
+	Owner string `json:"owner"`
 }
 
 type TxOut struct {
 	Owner  string `json:"owner"`
 	Amount int    `json:"amount"`
+}
+
+type Utxo struct {
+	TxId   string
+	Amount int
+	Index  int
 }
 
 func (t *Tx) getId() {
@@ -40,7 +46,7 @@ func (t *Tx) getId() {
 
 func makeCoinbaseTx(address string) *Tx {
 	txIns := []*TxIn{
-		{Owner: "COINBASE", Amount: minerReward},
+		{TxId: "", Index: -1, Owner: "COINBASE"},
 	}
 
 	txOuts := []*TxOut{
@@ -60,46 +66,6 @@ func makeCoinbaseTx(address string) *Tx {
 }
 
 func makeTx(from string, to string, amount int) (*Tx, error) {
-	if Blockchain().BalanceByAddress(from) < amount {
-		return nil, errors.New("Not enough money")
-	}
-
-	var txIns []*TxIn
-	var txOuts []*TxOut
-
-	total := 0
-
-	oldTxOuts := Blockchain().TxOutsByAddress(from)
-
-	for _, txOut := range oldTxOuts {
-		if total > amount {
-			break
-		}
-
-		txIn := &TxIn{txOut.Owner, txOut.Amount}
-		txIns = append(txIns, txIn)
-		total += txOut.Amount
-	}
-
-	change := total - amount
-
-	if change != 0 {
-		changeTxOut := &TxOut{from, change}
-		txOuts = append(txOuts, changeTxOut)
-	}
-
-	txOut := &TxOut{to, amount}
-	txOuts = append(txOuts, txOut)
-
-	tx := &Tx{
-		Id:        "",
-		Timestamp: int(time.Now().Unix()),
-		TxIns:     txIns,
-		TxOuts:    txOuts,
-	}
-	tx.getId()
-
-	return tx, nil
 
 }
 

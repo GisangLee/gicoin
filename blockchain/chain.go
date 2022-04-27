@@ -91,35 +91,36 @@ func (b *blockchain) difficulty() int {
 	}
 }
 
-func (b *blockchain) txOuts() []*TxOut {
-	blocks := b.Blocks()
+func (b *blockchain) UTXOByAddress(address string) []*Utxo {
+	var uTxOuts []*Utxo
 
-	var txOuts []*TxOut
+	sTxOuts := make(map[string]bool)
 
-	for _, block := range blocks {
+	for _, block := range b.Blocks() {
 		for _, tx := range block.Transactions {
-			txOuts = append(txOuts, tx.TxOuts...)
+			for _, input := range tx.TxIns {
+				if input.Owner == address {
+					sTxOuts[input.TxId] = true
+				}
+			}
+
+			for index, output := range tx.TxOuts {
+				_, ok := sTxOuts[tx.Id]
+
+				if output.Owner == address {
+					if !ok {
+						uTxOuts = append(uTxOuts, &Utxo{TxId: tx.Id, Amount: output.Amount, Index: index})
+					}
+				}
+			}
 		}
 	}
 
-	return txOuts
-}
-
-func (b *blockchain) TxOutsByAddress(address string) []*TxOut {
-	var ownedTxOuts []*TxOut
-	txOuts := b.txOuts()
-
-	for _, txOut := range txOuts {
-		if txOut.Owner == address {
-			ownedTxOuts = append(ownedTxOuts, txOut)
-		}
-	}
-
-	return ownedTxOuts
+	return uTxOuts
 }
 
 func (b *blockchain) BalanceByAddress(address string) int {
-	txOuts := b.TxOutsByAddress(address)
+	txOuts := b.UTXOByAddress(address)
 
 	var amount int
 
