@@ -129,3 +129,15 @@ func (m *mempool) TxToConfirm() []*Tx {
 
 	return txs
 }
+
+func isOnMempool(uTxOut *Utxo) bool {
+	exists := false
+
+	for _, tx := range Mempool.Txs {
+		for _, input := range tx.TxIns {
+			exists = input.TxId == uTxOut.TxId && input.Index == uTxOut.Index
+		}
+	}
+
+	return exists
+}

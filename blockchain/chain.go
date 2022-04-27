@@ -109,7 +109,11 @@ func (b *blockchain) UTXOByAddress(address string) []*Utxo {
 
 				if output.Owner == address {
 					if !ok {
-						uTxOuts = append(uTxOuts, &Utxo{TxId: tx.Id, Amount: output.Amount, Index: index})
+						uTxOut := &Utxo{TxId: tx.Id, Amount: output.Amount, Index: index}
+
+						if !isOnMempool(uTxOut) {
+							uTxOuts = append(uTxOuts, uTxOut)
+						}
 					}
 				}
 			}
